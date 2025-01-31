@@ -53,7 +53,6 @@ public class PostView extends BasicView {
         List<Label> newSelectedLabels = showAndSelectLabel(in, out);
         boolean result = controller.update(id, newTitle, newContent, newSelectedLabels);
         out.println(result ? Massage.ACTION_SUCCESS : Massage.ACTION_FAILED);
-
     }
 
     @Override
