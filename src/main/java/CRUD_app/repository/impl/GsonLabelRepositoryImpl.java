@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class GsonLabelRepositoryImpl implements LabelRepository {
 
-    private static final String FILE_NAME = "label.json";
+    private static final String DATABASE_FILE_NAME = "label.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
@@ -28,15 +28,15 @@ public class GsonLabelRepositoryImpl implements LabelRepository {
 
     @Override
     public List<Label> findAll() {
-        return readAllFromFile();
+        return readDataFromFile();
     }
 
     @Override
     public Integer save(Label labelDto) {
-        var all = findAll();
-        int id = getMaxId(all);
-        all.add(new Label(id, labelDto.name()));
-        writeAllToFile(all);
+        var loadedLabels = findAll();
+        int id = getMaxId(loadedLabels);
+        loadedLabels.add(new Label(id, labelDto.name()));
+        writeDataToFile(loadedLabels);
         return id;
     }
 
@@ -44,11 +44,11 @@ public class GsonLabelRepositoryImpl implements LabelRepository {
     public boolean update(Label label) {
         var all = findAll();
         if (all.stream().anyMatch(l -> l.id() == label.id())) {
-            writeAllToFile(
+            writeDataToFile(
                     all.stream().map(l -> l.id() == label.id()
                                     ? new Label(l.id(), label.name(), l.status())
                                     : l)
-                            .collect(Collectors.toList()));
+                            .toList());
             return true;
         }
         return false;
@@ -56,29 +56,29 @@ public class GsonLabelRepositoryImpl implements LabelRepository {
 
     @Override
     public void deleteById(Integer id) {
-        writeAllToFile(findAll().stream().map(l -> l.id() == id
+        writeDataToFile(findAll().stream().map(l -> l.id() == id
                         ? new Label(l.id(), l.name(), Status.DELETED)
                         : l)
-                .collect(Collectors.toList())
+                .toList()
         );
     }
 
 
-    private void writeAllToFile(List<Label> obj) {
-        try (FileWriter fileWriter = new FileWriter(FILE_NAME)) {
-            gson.toJson(obj, fileWriter);
+    private void writeDataToFile(List<Label> savedData) {
+        try (var writer = new FileWriter(DATABASE_FILE_NAME)) {
+            gson.toJson(savedData, writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println("Saved");
     }
 
-    private List<Label> readAllFromFile() {
+    private List<Label> readDataFromFile() {
         List<Label> labels = null;
-        Type listType = new TypeToken<List<Label>>() {
+        Type type = new TypeToken<List<Label>>() {
         }.getType();
-        try (FileReader reader = new FileReader(FILE_NAME)) {
-            labels = gson.fromJson(reader, listType);
+        try (FileReader reader = new FileReader(DATABASE_FILE_NAME)) {
+            labels = gson.fromJson(reader, type);
             System.out.println("Loaded");
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -1,0 +1,77 @@
+[
+  {
+    "id": 0,
+    "name": "имя метки 0",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 1,
+    "name": "имя метки 1",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 2,
+    "name": "имя метки 2",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 3,
+    "name": "имя метки 3",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 4,
+    "name": "new 4 label",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 5,
+    "name": "имя метки 5",
+    "status": "DELETED"
+  },
+  {
+    "id": 6,
+    "name": "имя метки 6",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 7,
+    "name": "имя метки 7",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 8,
+    "name": "имя метки 8",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 9,
+    "name": "имя метки 9",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 11,
+    "name": "new label",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 13,
+    "name": "metla",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 14,
+    "name": "ночная метка",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 15,
+    "name": "mers",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 16,
+    "name": "asdasdererer",
+    "status": "ACTIVE"
+  }
+]

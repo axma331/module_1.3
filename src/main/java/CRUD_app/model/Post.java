@@ -1,26 +1,15 @@
 package CRUD_app.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
-
-import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Accessors(chain = true)
-public class Post {
-    private int id;
-    private String title;
-    private String content;
-    private final List<Label> labels = new ArrayList<>();
-    private Status status= Status.ACTIVE;
+public record Post(int id, String title, String content, List<Label> labels, Status status) {
 
-    public Post addLabel(Label label) {
-        this.labels.add(label);
-        return this;
+    public Post(String title, String content, List<Label> labels) {
+        this(-1, title, content, labels, Status.ACTIVE);
+    }
+
+    public Post(int id, String title, String content, List<Label> labels) {
+        this(id, title, content, labels, Status.ACTIVE);
+
     }
 }

@@ -6,48 +6,15 @@ import CRUD_app.model.Massage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 
-public class LabelView {
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-    PrintWriter out = new PrintWriter(System.out, true);
+public class LabelView extends BasicView {
+
     LabelController controller = new LabelController();
 
-
-    public void startDialog() {
-        try {
-            do {
-                out.println(Massage.WELCOME);
-                switch (in.readLine().toLowerCase()) {
-                    case "create" -> {
-                        create(in, out);
-                    }
-                    case "edit" -> {
-                        update(in, out);
-                    }
-                    case "get" -> {
-                        get(in, out);
-                    }
-                    case "delete" -> {
-                        delete(in, out);
-                    }
-                    case "exit" -> {
-                        return;
-                    }
-                    default -> {
-                        out.println(Massage.REPEAT);
-                    }
-                }
-            } while (true);
-        } catch (IOException e) {
-            out.println(Massage.ACTION_FAILED);
-            e.printStackTrace();
-        }
-    }
-
-    private void create(BufferedReader in, PrintWriter out) throws IOException {
+    @Override
+    void create(BufferedReader in, PrintWriter out) throws IOException {
         out.println(Massage.ENTER_LABEL_NAME);
         String answer = in.readLine();
         int assignedId = controller.create(answer);
@@ -55,16 +22,8 @@ public class LabelView {
         out.println("Присвоен id = " + assignedId);
     }
 
-    private void update(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
-        int id = Integer.parseInt(in.readLine());
-        out.println(Massage.ENTER_LABEL_NAME);
-        String name = in.readLine();
-        boolean result = controller.update(id, name);
-        out.println(result ? Massage.ACTION_SUCCESS : Massage.ACTION_FAILED);
-    }
-
-    private void get(BufferedReader in, PrintWriter out) throws IOException {
+    @Override
+    void get(BufferedReader in, PrintWriter out) throws IOException {
         out.println(Massage.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
         Label objById = controller.getById(id);
@@ -76,11 +35,32 @@ public class LabelView {
         out.println(Massage.ACTION_SUCCESS);
     }
 
-    private void delete(BufferedReader in, PrintWriter out) throws IOException {
+    @Override
+    void update(BufferedReader in, PrintWriter out) throws IOException {
+        out.println(Massage.ENTER_ID);
+        int id = Integer.parseInt(in.readLine());
+        out.println(Massage.ENTER_LABEL_NAME);
+        String name = in.readLine();
+        boolean result = controller.update(id, name);
+        out.println(result ? Massage.ACTION_SUCCESS : Massage.ACTION_FAILED);
+    }
+
+    @Override
+    void delete(BufferedReader in, PrintWriter out) throws IOException {
         out.println(Massage.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
         controller.deleteById(id);
         out.println(Massage.ACTION_SUCCESS);
     }
+
+    @Override
+    void showAll() {
+        getAll().forEach(l -> out.println( l.id() + ": "+l.name()));
+    }
+
+    public List<Label> getAll() {
+        return controller.getAll();
+    }
+
 
 }

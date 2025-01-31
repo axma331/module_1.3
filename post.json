@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "title": "sd",
+    "content": "asdfasdf",
+    "labels": [],
+    "status": "DELETED"
+  },
+  {
+    "id": 2,
+    "title": "asd",
+    "content": "asdfal;jk;alksdf",
+    "labels": [
+      {
+        "id": 3,
+        "name": "имя метки 3",
+        "status": "ACTIVE"
+      },
+      {
+        "id": 4,
+        "name": "new 4 label",
+        "status": "ACTIVE"
+      },
+      {
+        "id": 5,
+        "name": "имя метки 5",
+        "status": "DELETED"
+      },
+      {
+        "id": 16,
+        "name": "asdasdererer",
+        "status": "ACTIVE"
+      }
+    ],
+    "status": "DELETED"
+  }
+]
