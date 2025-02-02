@@ -7,91 +7,87 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GsonLabelRepositoryImpl implements LabelRepository {
 
-    private static final String DATABASE_FILE_NAME = "label.json";
+    private static final String DATABASE_FILE_NAME = "src/main/resources/label.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
     public Label findById(Integer id) {
-        return findAll().stream().filter(l -> l.id() == id).findFirst().orElse(null);
+        return readDataFromFile().stream()
+                .filter(l -> l.id().equals(id)).findFirst().orElse(null);
     }
 
     @Override
     public List<Label> findAll() {
-        return readDataFromFile();
+        return readDataFromFile().stream()
+                .filter(l -> l.status().equals(Status.ACTIVE)).toList();
     }
 
     @Override
-    public Integer save(Label labelDto) {
-        var loadedLabels = findAll();
-        int id = getMaxId(loadedLabels);
-        loadedLabels.add(new Label(id, labelDto.name()));
-        writeDataToFile(loadedLabels);
-        return id;
+    public Label save(Label entity) {
+        List<Label> loadedData = readDataFromFile();
+        int id = getMaxId(loadedData);
+        Label createdObj = new Label(id, entity.name(), Status.ACTIVE);
+        loadedData.add(createdObj);
+        boolean success = writeDataToFile(loadedData);
+        return success ? createdObj : null;
     }
 
     @Override
-    public boolean update(Label label) {
-        var all = findAll();
-        if (all.stream().anyMatch(l -> l.id() == label.id())) {
-            writeDataToFile(
-                    all.stream().map(l -> l.id() == label.id()
-                                    ? new Label(l.id(), label.name(), l.status())
-                                    : l)
-                            .toList());
-            return true;
+    public Label update(Label entity) {
+        List<Label> updatedData = readDataFromFile().stream().map(l -> !l.id().equals(entity.id()) ? l
+                        : new Label(l.id(), entity.name(), l.status()))
+                .toList();
+        if (writeDataToFile(updatedData)) {
+            return updatedData.stream().filter(l -> l.id().equals(entity.id())).findFirst().orElse(null);
         }
-        return false;
+        return null;
     }
 
     @Override
-    public void deleteById(Integer id) {
-        writeDataToFile(findAll().stream().map(l -> l.id() == id
-                        ? new Label(l.id(), l.name(), Status.DELETED)
-                        : l)
-                .toList()
-        );
+    public boolean deleteById(Integer id) {
+        List<Label> updatedData = readDataFromFile().stream().map(l -> !l.id().equals(id) ? l
+                        : new Label(l.id(), l.name(), Status.DELETED))
+                .toList();
+        return updatedData.stream().anyMatch(l -> l.id().equals(id) && l.status().equals(Status.DELETED))
+                && writeDataToFile(updatedData);
     }
 
 
-    private void writeDataToFile(List<Label> savedData) {
+    private boolean writeDataToFile(List<Label> savedData) {
         try (var writer = new FileWriter(DATABASE_FILE_NAME)) {
             gson.toJson(savedData, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("File saving error!\n" + e.getMessage());
+            return false;
         }
-        System.out.println("Saved");
+        System.out.println("The data is saved to the file!");
+        return true;
     }
 
     private List<Label> readDataFromFile() {
-        List<Label> labels = null;
         Type type = new TypeToken<List<Label>>() {
         }.getType();
         try (FileReader reader = new FileReader(DATABASE_FILE_NAME)) {
-            labels = gson.fromJson(reader, type);
-            System.out.println("Loaded");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            List<Label> labels = gson.fromJson(reader, type);
+            System.out.println("Data loaded from the file!");
+            return labels != null ? labels : new ArrayList<>();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("File reading error:" + e.getMessage());
+            return new ArrayList<>(); //todo Collections.emptyList()?
         }
-        return labels == null ? new ArrayList<>() : labels;
     }
 
-    // utils
-
-    public int getMaxId(List<Label> labels) {
+    private int getMaxId(List<Label> labels) {
         return labels.stream().mapToInt(Label::id).max().orElse(0) + 1;
     }
-
 }

@@ -8,9 +8,9 @@ import java.util.List;
 
 public class WriterController {
 
-    GsonWriterRepository repository = new GsonWriterRepository();
+    private final GsonWriterRepository repository = new GsonWriterRepository();
 
-    public int create(String firstName, String lastName, List<Post> selectedPosts) {
+    public Writer create(String firstName, String lastName, List<Post> selectedPosts) {
         return repository.save(new Writer(firstName, lastName, selectedPosts));
     }
 
@@ -18,12 +18,12 @@ public class WriterController {
         return repository.findById(id);
     }
 
-    public boolean update(int id, String name, String lastName, List<Post> selectedPosts) {
+    public Writer update(int id, String name, String lastName, List<Post> selectedPosts) {
         return repository.update(new Writer(id, name, lastName, selectedPosts));
     }
 
-    public void deleteById(int id) {
-        repository.deleteById(id);
+    public boolean deleteById(int id) {
+        return repository.deleteById(id);
     }
 
     public List<Writer> getAll() {

@@ -1,6 +1,6 @@
-package CRUD_app.model;
+package CRUD_app.view;
 
-public enum Massage {
+public enum MassageUtils {
     WELCOME("""
             Введите желаемую команду:
             create | edit | get | delete | show all | exit.
@@ -17,7 +17,7 @@ public enum Massage {
 
     private final String description;
 
-    Massage(String _description) {
+    MassageUtils(String _description) {
         description = _description;
     }
 

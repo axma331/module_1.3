@@ -1,7 +1,6 @@
 package CRUD_app.view;
 
 import CRUD_app.controller.WriterController;
-import CRUD_app.model.Massage;
 import CRUD_app.model.Post;
 import CRUD_app.model.Writer;
 
@@ -13,53 +12,58 @@ import java.util.List;
 
 public class WriterView extends BasicView {
 
-    WriterController controller = new WriterController();
-    PostView postView = new PostView();
+    private final WriterController controller = new WriterController();
+    private final PostView postView = new PostView();
 
     @Override
-    void create(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_NAME);
+    void create() throws IOException {
+        out.println(MassageUtils.ENTER_NAME);
         String firstName = in.readLine();
-        out.println(Massage.ENTER_LAST_NAME);
+        out.println(MassageUtils.ENTER_LAST_NAME);
         String lastName = in.readLine();
         List<Post> selectedPosts = showAndSelectPosts(in, out);
-        int assignedId = controller.create(firstName, lastName, selectedPosts);
-        out.println(Massage.ACTION_SUCCESS);
-        out.println("Присвоен id = " + assignedId);
+        Writer createdObj = controller.create(firstName, lastName, selectedPosts);
+        System.out.println(createdObj == null ? MassageUtils.ACTION_FAILED : MassageUtils.ACTION_SUCCESS);
+
     }
 
     @Override
-    void get(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
+    void get() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
-        Writer objById = controller.getById(id);
-        if (objById == null) {
-            out.println(Massage.ACTION_FAILED);
-            return;
-        }
-        out.println(objById);
-        out.println(Massage.ACTION_SUCCESS);
+        Writer gettingObj = controller.getById(id);
+        out.println(gettingObj != null
+                ? gettingObj + "\n" + MassageUtils.ACTION_SUCCESS
+                : MassageUtils.ACTION_FAILED
+        );
     }
 
     @Override
-    void update(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
-        int id = Integer.parseInt(in.readLine());
-        out.println(Massage.ENTER_NAME);
+    void update() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
+        Integer id = Integer.parseInt(in.readLine());
+        out.println(MassageUtils.ENTER_NAME);
         String newName = in.readLine();
-        out.println(Massage.ENTER_LAST_NAME);
+        out.println(MassageUtils.ENTER_LAST_NAME);
         String newLastName = in.readLine();
         List<Post> newSelectedPosts = showAndSelectPosts(in, out);
-        boolean result = controller.update(id, newName, newLastName, newSelectedPosts);
-        out.println(result ? Massage.ACTION_SUCCESS : Massage.ACTION_FAILED);
+        Writer gettingObj= controller.update(id, newName, newLastName, newSelectedPosts);
+        out.println(gettingObj != null
+                && id.equals(gettingObj.id())
+                && newName.equals(gettingObj.firstName())
+                && newLastName.equals(gettingObj.lastName())
+                && gettingObj.posts().containsAll(newSelectedPosts)
+                ? MassageUtils.ACTION_SUCCESS
+                : MassageUtils.ACTION_FAILED
+        );
     }
 
     @Override
-    void delete(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
+    void delete() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
-        controller.deleteById(id);
-        out.println(Massage.ACTION_SUCCESS);
+        boolean success = controller.deleteById(id);
+        out.println(success ? MassageUtils.ACTION_SUCCESS : MassageUtils.ACTION_FAILED);
     }
 
     @Override
@@ -80,8 +84,7 @@ public class WriterView extends BasicView {
         String inputIdSet = in.readLine();
         int[] ids = Arrays.stream(inputIdSet.split("\\s+")).mapToInt(Integer::parseInt).toArray();
         Arrays.stream(ids).forEach(out::println);
-        List<Post> selectedPosts = allPosts.stream()
+        return allPosts.stream()
                 .filter(l -> Arrays.stream(ids).anyMatch(id -> id == l.id())).toList();
-        return selectedPosts;
     }
 }

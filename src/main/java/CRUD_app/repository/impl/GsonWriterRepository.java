@@ -18,13 +18,14 @@ import java.util.stream.Stream;
 
 public class GsonWriterRepository implements WriterRepository {
 
-    private static final String DATABASE_FILE_NAME = "writer.json";
+    private static final String DATABASE_FILE_NAME = "src/main/resources/writer.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 
     @Override
     public Writer findById(Integer id) {
-        return findAll().stream().filter(l -> l.id() == id).findFirst().orElse(null);
+        return readDataFromFile().stream()
+                .filter(l -> l.id().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -33,38 +34,38 @@ public class GsonWriterRepository implements WriterRepository {
     }
 
     @Override
-    public Integer save(Writer writer) {
-        List<Writer> loadedWriters = findAll();
-        int id = getMaxId(loadedWriters);
-        loadedWriters.add(new Writer(id, writer.firstName(), writer.lastName(), writer.posts()));
-        writeDataToFile(loadedWriters);
-        return id;
+    public Writer save(Writer writer) {
+        List<Writer> loadedData = readDataFromFile();
+        int id = getMaxId(loadedData);
+        Writer createdObj = new Writer(id, writer.firstName(), writer.lastName(), writer.posts());
+        loadedData.add(createdObj);
+        boolean success = writeDataToFile(loadedData);
+        return success ? createdObj : null;
     }
 
     @Override
-    public boolean update(Writer writer) {
-        List<Writer> loadedWriters = findAll();
-        if (loadedWriters.stream().anyMatch(p -> p.id() == writer.id())) {
-            writeDataToFile(loadedWriters.stream().map(p -> p.id() == writer.id()
-                    ? new Writer(
-                    p.id(),
-                    writer.firstName(),
-                    writer.lastName(),
-                    Stream.concat(p.posts().stream(), writer.posts().stream()).toList(),
-                    writer.status())
-                    : p).toList()
-            );
-            return true;
+    public Writer update(Writer entity) {
+        List<Writer> updatedData = readDataFromFile().stream().map(l -> !l.id().equals(entity.id()) ? l
+                        : new Writer(
+                        entity.id(),
+                        entity.firstName(),
+                        entity.lastName(),
+                        Stream.concat(l.posts().stream(), entity.posts().stream()).toList(),
+                        entity.status()))
+                .toList();
+        if (writeDataToFile(updatedData)) {
+            return updatedData.stream().filter(l -> l.id().equals(entity.id())).findFirst().orElse(null);
         }
-        return false;
+        return null;
     }
 
     @Override
-    public void deleteById(Integer id) {
-        writeDataToFile(findAll().stream().map(w -> w.id() == id
-                ? new Writer(w.id(), w.firstName(), w.lastName(), w.posts(), Status.DELETED)
-                : w).toList()
-        );
+    public boolean deleteById(Integer id) {
+        List<Writer> updatedData = readDataFromFile().stream().map(w -> !w.id().equals(id) ? w
+                        : new Writer(w.id(), w.firstName(), w.lastName(), w.posts(), Status.DELETED))
+                .toList();
+        return updatedData.stream().anyMatch(l -> l.id().equals(id) && l.status().equals(Status.DELETED))
+                && writeDataToFile(updatedData);
 
     }
 
@@ -84,16 +85,16 @@ public class GsonWriterRepository implements WriterRepository {
         return loadedWriters == null ? new ArrayList<>() : loadedWriters;
     }
 
-    private void writeDataToFile(List<Writer> savedData) {
+    private boolean writeDataToFile(List<Writer> savedData) {
         try (var writer = new FileWriter(DATABASE_FILE_NAME)) {
             gson.toJson(savedData, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("File saving error!\n" + e.getMessage());
+            return false;
         }
-        System.out.println("Saved");
+        System.out.println("The data is saved to the file!");
+        return true;
     }
-
-    //utils
 
     private int getMaxId(List<Writer> writers) {
         return writers.stream().mapToInt(Writer::id).max().orElse(0) + 1;

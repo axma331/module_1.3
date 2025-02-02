@@ -1,11 +1,12 @@
 package CRUD_app.model;
 
-public record Label(int id, String name, Status status) {
+public record Label(Integer id, String name, Status status) {
 
     public Label(String name) {
-        this(-1, name, Status.ACTIVE);
+        this(null, name, null);
     }
-    public Label(int id, String name) {
+
+    public Label(Integer id, String name) {
         this(id, name, Status.ACTIVE);
     }
 }

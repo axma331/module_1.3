@@ -2,65 +2,65 @@ package CRUD_app.view;
 
 import CRUD_app.controller.PostController;
 import CRUD_app.model.Label;
-import CRUD_app.model.Massage;
 import CRUD_app.model.Post;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
 public class PostView extends BasicView {
 
-    PostController controller = new PostController();
-    LabelView labelView = new LabelView();
-
+    private final PostController controller = new PostController();
+    private final LabelView labelView = new LabelView();
 
     @Override
-    void create(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_POST_TITLE);
+    void create() throws IOException {
+        out.println(MassageUtils.ENTER_POST_TITLE);
         String title = in.readLine();
-        out.println(Massage.ENTER_POST_CONTENT);
+        out.println(MassageUtils.ENTER_POST_CONTENT);
         String content = in.readLine();
-        List<Label> selectedLabels = showAndSelectLabel(in, out);
-        int assignedId = controller.create(title, content, selectedLabels);
-        out.println(Massage.ACTION_SUCCESS);
-        out.println("Присвоен id = " + assignedId);
+        List<Label> selectedLabels = showAndSelectLabel();
+        Post createdObj = controller.create(title, content, selectedLabels);
+        System.out.println(createdObj == null ? MassageUtils.ACTION_FAILED : MassageUtils.ACTION_SUCCESS);
     }
 
     @Override
-    void get(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
+    void get() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
-        Post objById = controller.getById(id);
-        if (objById == null) {
-            out.println(Massage.ACTION_FAILED);
-            return;
-        }
-        out.println(objById);
-        out.println(Massage.ACTION_SUCCESS);
+        Post gettingObj = controller.getById(id);
+        out.println(gettingObj != null
+                ? gettingObj + "\n" + MassageUtils.ACTION_SUCCESS
+                : MassageUtils.ACTION_FAILED
+        );
     }
 
     @Override
-    void update(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
-        int id = Integer.parseInt(in.readLine());
-        out.println(Massage.ENTER_POST_TITLE);
+    void update() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
+        Integer id = Integer.parseInt(in.readLine());
+        out.println(MassageUtils.ENTER_POST_TITLE);
         String newTitle = in.readLine();
-        out.println(Massage.ENTER_POST_CONTENT);
+        out.println(MassageUtils.ENTER_POST_CONTENT);
         String newContent = in.readLine();
-        List<Label> newSelectedLabels = showAndSelectLabel(in, out);
-        boolean result = controller.update(id, newTitle, newContent, newSelectedLabels);
-        out.println(result ? Massage.ACTION_SUCCESS : Massage.ACTION_FAILED);
+        List<Label> newSelectedLabels = showAndSelectLabel();
+        Post gettingObj = controller.update(id, newTitle, newContent, newSelectedLabels);
+        out.println(gettingObj != null
+                && id.equals(gettingObj.id())
+                && newTitle.equals(gettingObj.title())
+                && newContent.equals(gettingObj.content())
+                && gettingObj.labels().containsAll(newSelectedLabels)
+                ? MassageUtils.ACTION_SUCCESS
+                : MassageUtils.ACTION_FAILED
+        );
     }
 
     @Override
-    void delete(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(Massage.ENTER_ID);
+    void delete() throws IOException {
+        out.println(MassageUtils.ENTER_ID);
         int id = Integer.parseInt(in.readLine());
-        controller.deleteById(id);
-        out.println(Massage.ACTION_SUCCESS);
+        boolean success = controller.deleteById(id);
+        out.println(success ? MassageUtils.ACTION_SUCCESS : MassageUtils.ACTION_FAILED);
     }
 
     @Override
@@ -74,15 +74,14 @@ public class PostView extends BasicView {
         return controller.getAll();
     }
 
-    private List<Label> showAndSelectLabel(BufferedReader in, PrintWriter out) throws IOException {
+    private List<Label> showAndSelectLabel() throws IOException {
         out.println("Введите id ярлыков для добавления");
-        List<Label> allLabels = labelView.getAll();
-        allLabels.forEach(e -> out.println(e.id() + ": " + e.name()));
+        List<Label> database = labelView.getAll();
+        database.forEach(e -> out.println(e.id() + ": " + e.name()));
         String inputIdSet = in.readLine();
         int[] ids = Arrays.stream(inputIdSet.split("\\s+")).mapToInt(Integer::parseInt).toArray();
         Arrays.stream(ids).forEach(out::println);
-        List<Label> selectedLabels = allLabels.stream().
+        return database.stream().
                 filter(l -> Arrays.stream(ids).anyMatch(id -> id == l.id())).toList();
-        return selectedLabels;
     }
 }

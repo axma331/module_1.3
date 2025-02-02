@@ -1,15 +1,17 @@
 package CRUD_app.controller;
 
 import CRUD_app.model.Label;
+import CRUD_app.model.Status;
+import CRUD_app.repository.LabelRepository;
 import CRUD_app.repository.impl.GsonLabelRepositoryImpl;
 
 import java.util.List;
 
 public class LabelController {
-    GsonLabelRepositoryImpl repository = new GsonLabelRepositoryImpl();
 
+    private final LabelRepository repository = new GsonLabelRepositoryImpl();
 
-    public int create(String labelName) {
+    public Label create(String labelName) {
         return repository.save(new Label(labelName));
     }
 
@@ -17,12 +19,12 @@ public class LabelController {
         return repository.findById(id);
     }
 
-    public boolean update(int id, String newName) {
+    public Label update(int id, String newName) {
         return repository.update(new Label(id, newName));
     }
 
-    public void deleteById(int id) {
-        repository.deleteById(id);
+    public boolean deleteById(int id) {
+        return repository.deleteById(id);
     }
 
     public List<Label> getAll() {

@@ -8,9 +8,9 @@ import java.util.List;
 
 public class PostController {
 
-    GsonPostRepositoryImpl repository = new GsonPostRepositoryImpl();
+    private final GsonPostRepositoryImpl repository = new GsonPostRepositoryImpl();
 
-    public int create(String title, String content, List<Label> labels) {
+    public Post create(String title, String content, List<Label> labels) {
         return repository.save(new Post(title, content, labels));
     }
 
@@ -18,12 +18,12 @@ public class PostController {
         return repository.findById(id);
     }
 
-    public boolean update(int id, String newTitle, String newContent, List<Label> newSelectedLabels) {
+    public Post update(int id, String newTitle, String newContent, List<Label> newSelectedLabels) {
         return repository.update(new Post(id, newTitle, newContent, newSelectedLabels));
     }
 
-    public void deleteById(int id) {
-        repository.deleteById(id);
+    public boolean deleteById(int id) {
+        return repository.deleteById(id);
     }
 
     public List<Post> getAll() {

@@ -17,13 +17,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class GsonPostRepositoryImpl implements PostRepository {
-    private static final String DATABASE_FILE_NAME = "post.json";
+    private static final String DATABASE_FILE_NAME = "src/main/resources/post.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 
     @Override
     public Post findById(Integer id) {
-        return findAll().stream().filter(l -> l.id() == id).findFirst().orElse(null);
+        return readDataFromFile().stream()
+                .filter(l -> l.id().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -32,47 +33,49 @@ public class GsonPostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public Integer save(Post postDto) {
-        List<Post> loadedPosts = findAll();
-        int id = getMaxId(loadedPosts);
-        loadedPosts.add(new Post(id, postDto.title(), postDto.content(), postDto.labels(), postDto.status()));
-        writeDataToFile(loadedPosts);
-        return id;
+    public Post save(Post entity) {
+        List<Post> loadedData = readDataFromFile();
+        int id = getMaxId(loadedData);
+        Post createdObj = new Post(id, entity.title(), entity.content(), entity.labels(), Status.ACTIVE);
+        loadedData.add(createdObj);
+        boolean success = writeDataToFile(loadedData);
+        return success ? createdObj : null;
     }
 
     @Override
-    public boolean update(Post post) {
-        List<Post> loadedPosts = findAll();
-        if (loadedPosts.stream().anyMatch(p -> p.id() == post.id())) {
-            writeDataToFile(loadedPosts.stream().map(p -> p.id() == post.id()
-                    ? new Post(
-                    p.id(),
-                    post.title(),
-                    post.content(),
-                    Stream.concat(p.labels().stream(), post.labels().stream()).toList(),
-                    post.status())
-                    : p).toList()
-            );
-            return true;
+    public Post update(Post entity) {
+        List<Post> updatedData = readDataFromFile().stream().map(l -> !l.id().equals(entity.id()) ? l
+                        : new Post(
+                        entity.id(),
+                        entity.title(),
+                        entity.content(),
+                        Stream.concat(l.labels().stream(), entity.labels().stream()).toList(),
+                        entity.status()))
+                .toList();
+        if (writeDataToFile(updatedData)) {
+            return updatedData.stream().filter(l -> l.id().equals(entity.id())).findFirst().orElse(null);
         }
-        return false;
+        return null;
     }
 
     @Override
-    public void deleteById(Integer id) {
-        writeDataToFile(findAll().stream().map(p -> p.id() == id
+    public boolean deleteById(Integer id) {
+        List<Post> updatedData = readDataFromFile().stream().map(p -> p.id().equals(id)
                 ? new Post(p.id(), p.title(), p.content(), p.labels(), Status.DELETED)
-                : p).toList()
-        );
+                : p).toList();
+        return updatedData.stream().anyMatch(l -> l.id().equals(id) && l.status().equals(Status.DELETED))
+                && writeDataToFile(updatedData);
     }
 
-    private void writeDataToFile(List<Post> savedData) {
+    private boolean writeDataToFile(List<Post> savedData) {
         try (var writer = new FileWriter(DATABASE_FILE_NAME)) {
             gson.toJson(savedData, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("File saving error!\n" + e.getMessage());
+            return false;
         }
-        System.out.println("Saved");
+        System.out.println("The data is saved to the file!");
+        return true;
     }
 
     private List<Post> readDataFromFile() {
